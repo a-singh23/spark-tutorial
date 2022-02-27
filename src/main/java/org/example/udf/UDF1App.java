@@ -7,6 +7,11 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.functions;
 
+import org.apache.spark.sql.types.DataTypes;
+
+import static org.apache.spark.sql.functions.*;
+
+
 public class UDF1App {
     public static void main(String[] args) {
         System.setProperty("hadoop.home.dir","C:\\hadoop");
@@ -23,10 +28,14 @@ public class UDF1App {
                 .option("inferSchema",true)
                 .csv("src/main/resources/exams/students.csv");
 
+       session.udf().register("checkIfPass",score -> {
+           if(score.equals("A+") || score.equals("A") || score.equals("B") || score.equals("C"))
+               return "PASS";
+            return "FAIL";
+       }, DataTypes.StringType);
+
        students
-                .withColumn("REMARKS",functions.lit("PASS"))
-                .show();
-
-
+                .withColumn("REMARKS",callUDF("checkIfPass",col("grade")))
+                .show(20);
     }
 }
