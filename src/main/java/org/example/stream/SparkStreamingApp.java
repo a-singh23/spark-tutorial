@@ -5,12 +5,15 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
+import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
+import scala.Tuple2;
 
 
 public class SparkStreamingApp {
     public static void main(String[] args) throws InterruptedException {
+        System.setProperty("hadoop.home.dir","C:\\hadoop");
         Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
         Logger.getLogger("org.apache.spark.storage").setLevel(Level.ERROR);
 
@@ -24,11 +27,13 @@ public class SparkStreamingApp {
         //Receive Stream
         JavaReceiverInputDStream<String> lines= spark.socketTextStream("localhost",8989);
 
-
         //Transformations
         JavaDStream<String>  result= lines.map(val -> val);
-        result.print();
+        result=result.map(msg -> msg.split(",")[0]);
+        JavaPairDStream<String,Integer> out  =result.mapToPair(level -> new Tuple2<String,Integer>(level,1));
+        out=out.reduceByKey( (val1,val2) -> (val1+val2));
 
+        out.print();                // Display log level wise count
 
         spark.start();
         spark.awaitTermination();
