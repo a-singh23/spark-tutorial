@@ -10,6 +10,8 @@ import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import scala.Tuple2;
 
+import java.util.Scanner;
+
 
 public class SparkStreamingApp {
     public static void main(String[] args) throws InterruptedException {
@@ -37,5 +39,8 @@ public class SparkStreamingApp {
 
         spark.start();
         spark.awaitTermination();
+
+        Scanner scanner=new Scanner(System.in);
+        scanner.next();
     }
 }
